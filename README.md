@@ -1,5 +1,5 @@
 <div align="center">
-<h1 align="center">R-PROJECTS ®️</h1>
+<h1 align="center">R-PROJECTS</h1>
 </div>
 
 <div align="center">
