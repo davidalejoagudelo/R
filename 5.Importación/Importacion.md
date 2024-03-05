@@ -662,24 +662,18 @@ prueba <- read_csv(readr_example("challenge.csv"))
     ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 
 ``` r
-View(prueba)
-prueba
+head(prueba)
 ```
 
-    ## # A tibble: 2,000 × 2
-    ##        x y     
-    ##    <dbl> <date>
-    ##  1   404 NA    
-    ##  2  4172 NA    
-    ##  3  3004 NA    
-    ##  4   787 NA    
-    ##  5    37 NA    
-    ##  6  2332 NA    
-    ##  7  2489 NA    
-    ##  8  1449 NA    
-    ##  9  3665 NA    
-    ## 10  3863 NA    
-    ## # ℹ 1,990 more rows
+    ## # A tibble: 6 × 2
+    ##       x y     
+    ##   <dbl> <date>
+    ## 1   404 NA    
+    ## 2  4172 NA    
+    ## 3  3004 NA    
+    ## 4   787 NA    
+    ## 5    37 NA    
+    ## 6  2332 NA
 
 La segunda columna la asignó como fecha, pero no se cargaron los datos
 porque no es de la forma en la que R las lee.
