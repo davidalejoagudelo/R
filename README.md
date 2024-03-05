@@ -3,7 +3,7 @@
 </div>
 
 <div align="center">
-<img src="[https://github.com/davidalejoagudelo/SQL-projects/blob/main/MySQL.png](https://github.com/davidalejoagudelo/R/blob/main/R.png)" width="1280" height="449">
+<img src="[https://github.com/davidalejoagudelo/SQL-projects/blob/main/MySQL.png](https://github.com/davidalejoagudelo/R/blob/main/R.png)" width="640" height="225">
 </div>
 
 R learnings.  Data science
