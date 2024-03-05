@@ -8,8 +8,8 @@ title: ggplot2
 knitr::opts_chunk$set(fig.width=12, fig.height=8)
 ```
 
-```{r message=FALSE, warning=FALSE}
-setwd("C:/Users/david/OneDrive/Escritorio/Personal/a2/Curso - R/R/R")
+```{r}
+getwd()
 ```
 
 ```{r}

@@ -1,0 +1,260 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+
+options(scipen = 999)
+```
+
+```{r}
+enigh <- read_csv("hogares_enigh.csv")
+```
+
+### DISTRIBUCION DE DATOS
+
+```{r}
+ggplot(data = enigh)+
+  geom_bar(mapping = aes(x=tot_integ))
+```
+Se observar que hay hogares con muchos integrantes per es algo atípico
+
+```{r}
+enigh%>%
+  count(tot_integ)
+```
+
+```{r}
+enigh%>%
+  group_by(tot_integ)%>%
+  summarise(n = n())
+```
+
+```{r}
+ggplot(enigh)+
+  geom_histogram(mapping = aes(x = ing_cor), binwidth = 1000)
+```
+binwidth permite especificar los intervalos
+
+```{r}
+enigh%>%
+  count(cut_width(ing_cor,1000, boundary=0))
+```
+
+```{r}
+ingresos <- enigh%>%
+  filter(ing_cor<100000)
+
+ingresos
+```
+
+```{r}
+ggplot(ingresos)+
+  geom_histogram(mapping = aes(x=ing_cor), binwidth = 1000)
+```
+
+```{r}
+ingresos <- enigh%>%
+  filter(ing_cor<200000)
+
+ingresos
+```
+
+```{r}
+ggplot(ingresos)+
+  geom_histogram(mapping = aes(x=ing_cor), binwidth = 1000)
+```
+
+### GSub
+
+Permite cambiar un valor por otro en una columna de una tabla
+
+```{r}
+ingresos$clase_hog <- gsub(1,"Unipersonal", ingresos$clase_hog)
+ingresos$clase_hog <- gsub(2,"Nuclear", ingresos$clase_hog)
+ingresos$clase_hog <- gsub(3,"Ampliado", ingresos$clase_hog)
+ingresos$clase_hog <- gsub(4,"Compuesto", ingresos$clase_hog)
+ingresos$clase_hog <- gsub(5,"Corresidnte", ingresos$clase_hog)
+```
+
+```{r}
+ggplot(ingresos, mapping=aes(x=ing_cor, color = clase_hog))+
+  geom_histogram(binwidth = 1000)
+  
+```
+
+Se ve que el histograma no funciona porque cubre algunas clases, para eso está ña geometría "freqpoy". Este no tiene fondo
+
+```{r}
+ggplot(data = ingresos, mapping = aes(x=ing_cor, color = clase_hog))+
+  geom_freqpoly(binwidth = 1000)
+```
+
+### VALORES TÍPICOS
+
+```{r}
+ggplot(data = enigh)+
+  geom_histogram(mapping = aes(x = ingtrab), binwidth = 1000)
+```
+
+Hay MUCHOS valores atípicos. Se puede filtarr el dataframe, pero también se puede filtrar el eje
+
+```{r}
+ggplot(enigh)+
+  geom_histogram(mapping = aes(x = ingtrab), binwidth = 1000)+
+  coord_cartesian(xlim = c(0,150000))
+```
+Mucha gente vive de ingresos como inversiones, del gobierno, etc
+
+```{r}
+ingresos_trabajo <- enigh%>%
+  filter(ingtrab > 0 & ingtrab < 150000)
+
+ingresos_trabajo
+```
+
+```{r}
+ggplot(ingresos_trabajo)+
+  geom_histogram(mapping = aes(x=ingtrab), binwidth = 10000)
+```
+
+```{r}
+ingresos_trabajo$sexo_jefe <- gsub(1, "Hombre", ingresos_trabajo$sexo_jefe)
+
+ingresos_trabajo$sexo_jefe <- gsub(2, "Mujer", ingresos_trabajo$sexo_jefe)
+```
+
+```{r}
+ggplot(ingresos_trabajo, mapping = aes(x=ingtrab, color = sexo_jefe))+
+  geom_freqpoly(binwidth = 2000)
+```
+
+### VALORES PERDIDOS
+
+Se pueden cambiar los valores dentro de un data frame por NA's
+
+```{r}
+summary(enigh$ing_cor)
+```
+
+```{r}
+enigh <- enigh%>%
+  mutate(ing_cor=ifelse(ing_cor==0 | ing_cor > 200000, NA, ing_cor))
+
+summary(enigh$ing_cor)
+```
+Esto me ermite graficar ignorando los valores extremos
+
+```{r}
+ggplot(data = enigh, mapping = aes(x=edad_jefe, y = ing_cor))+
+  geom_point()
+```
+
+```{r}
+ggplot(data = enigh, mapping = aes(x=edad_jefe, y = ing_cor))+
+  geom_point(na.rm = T)
+```
+Esto hace que ignore los NA's
+
+### Covariación - categorica con continua
+
+Es el comportamiento entre variables. Depende de los tipos de variables que se trabajan
+
+1. Categórica con continua
+
+```{r}
+summary(enigh$sexo_jefe)
+```
+
+Es una variabl categórica pero por ser números es continua
+
+```{r}
+enigh$sexo_jefe <- gsub(1, "Hombre", enigh$sexo_jefe)
+enigh$sexo_jefe <- gsub(2, "Mujer", enigh$sexo_jefe)
+
+enigh$clase_hog <- gsub(1,"Unipersonal", enigh$clase_hog)
+enigh$clase_hog <- gsub(2,"Nuclear", enigh$clase_hog)
+enigh$clase_hog <- gsub(3,"Ampliado", enigh$clase_hog)
+enigh$clase_hog <- gsub(4,"Compuesto", enigh$clase_hog)
+enigh$clase_hog <- gsub(5,"Corresidnte", enigh$clase_hog)
+```
+
+```{r}
+ggplot(data = na.omit(enigh), mapping = aes(x = ing_cor, color =clase_hog))+
+  geom_freqpoly(binwidth = 10000)
+```
+"na.omit" hace que no se tomen los NA's en el gráfico
+
+No nos casamos on esta porque hay mucha diferencia entre los hogares nucleares y el resto de los hogares.
+
+Se puede hacer una gráfica de barras por proporción
+
+```{r}
+ggplot(data = na.omit(enigh))+
+  geom_bar(mapping = aes(x = clase_hog, y = ..prop.., group = 1))
+```
+
+El ingreso per capita permite hacer una ponderación por el número de personas
+
+```{r}
+enigh <- enigh%>%
+  mutate(ing_per_cap = ing_cor/tot_integ)
+
+enigh
+```
+
+```{r}
+ggplot(data = na.omit(enigh))+
+  geom_boxplot(mapping = aes(x=clase_hog, y = ing_per_cap))
+```
+
+### Covariación - categorica con categorica
+
+Son dos variables que no son muy buenas para graficar por si solas
+
+```{r}
+enigh$educa_jefe <- gsub("01", "Preescolar", enigh$educa_jefe)
+enigh$educa_jefe <- gsub("02", "Primaria incompletar", enigh$educa_jefe)
+enigh$educa_jefe <- gsub("03", "Primaria completa", enigh$educa_jefe)
+enigh$educa_jefe <- gsub("04", "Preescolar", enigh$educa_jefe)
+enigh$educa_jefe <- gsub("05", "Secundaria incompleta", enigh$educa_jefe)
+enigh$educa_jefe <- gsub("06", "Secundaria completa", enigh$educa_jefe)
+enigh$educa_jefe <- gsub("07", "Preparatoria incompleta", enigh$educa_jefe)
+enigh$educa_jefe <- gsub("08", "Preparatoria completa", enigh$educa_jefe)
+enigh$educa_jefe <- gsub("09", "Preescolar", enigh$educa_jefe)
+enigh$educa_jefe <- gsub("10", "Profesional incompleta", enigh$educa_jefe)
+enigh$educa_jefe <- gsub("11", "Posgrado", enigh$educa_jefe)
+```
+
+```{r}
+ggplot(data = enigh)+
+  geom_count(mapping = aes(x=clase_hog, y=educa_jefe))
+```
+"geom_count" permite hacer un gráfico de circulos. Si no se hace una especificación, se organizan los ejes por orden alfabétic.
+
+Se puede hacer tambien en tablas.
+
+```{r}
+enigh%>%
+  count(educa_jefe, clase_hog)
+```
+
+El mapa de calor también es muy util para ver esto
+
+```{r}
+enighh <- enigh%>%
+  count(educa_jefe, clase_hog)
+
+ggplot(data = na.omit(enighh))+
+  geom_tile(mapping=aes(x=clase_hog, y = educa_jefe, fill=n))
+```
+
+```{r}
+enighhh <- enigh%>%
+  count(educa_jefe, sexo_jefe)
+
+ggplot(data = na.omit(enighhh))+
+  geom_tile(mapping=aes(x=sexo_jefe, y = educa_jefe, fill=n))
+```
