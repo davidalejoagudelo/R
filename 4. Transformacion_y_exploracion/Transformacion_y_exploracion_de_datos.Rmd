@@ -1,7 +1,7 @@
 ---
 output: rmarkdown::github_document
 
-title: ggplot2
+title: Transformación y exploración de datos
 ---
 
 ```{r message=FALSE, warning=FALSE}
