@@ -343,8 +343,7 @@ Como hacerlo con un archivo completo. Tidyverse tiene archivos de muestra
 ```{r}
 prueba <- read_csv(readr_example("challenge.csv"))
 
-View(prueba)
-prueba
+head(prueba)
 ```
 
 La segunda columna la asignó como fecha, pero no se cargaron los datos porque no es de la forma en la que R las lee.
