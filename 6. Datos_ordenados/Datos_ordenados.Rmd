@@ -1,0 +1,193 @@
+---
+output: rmarkdown::github_document
+
+title: Datos ordenados
+---
+
+```{r message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8)
+```
+
+En este capítulo trabajaremos con datos ordenados, o tablas de datos.
+
+Los datos ordenados, generalmente, se refieren a una tabla de datos que tiene cierto formato para analizar la información. Es decir, filas y columnas que especifican la información de individuos (u objetos) y variables. Una misma tabla de datos puede presentarse de diversas formas, pero no todas las formas o estructuras de tablas son eficientes para generar visualizaciones o generar agregados estadísticos.
+
+En general, será necesario manipular los datos para generar una tabla estructurada u organizada a la que llamaremos tidy data.
+
+El término tidy data se refiere a una forma específica de organizar los valores de un conjunto de datos. Una tabla de datos del tipo tidy data se organiza de la siguiente manera:
+
+las filas representan individuos u observaciones, mientras que las columnas representan variables y los valores referentes a cada observación en cada variable se muestran en las celdas.
+
+### TIDY DATA
+
+Las tablas tipo "Tidy" deben cumplir 3 características:
+
+1)Cada fila representa un individuo u observación
+
+2)  Cada columna representa una variable
+
+3)  Cada celda representa un valor
+
+```{r}
+options(scipen = 999) #Esto es para desactivar la notación científica
+```
+
+```{r}
+library(tidyverse)
+library(readxl)
+```
+
+```{r}
+tabla_1 <- read_excel("C:/Users/david/OneDrive/Escritorio/Personal/a2/Curso - R/6. Datos_ordenados/Datos_ordenados_datos/tablas_ejemplo.xls", sheet = "tabla1")
+tabla_2 <- read_excel("C:/Users/david/OneDrive/Escritorio/Personal/a2/Curso - R/6. Datos_ordenados/Datos_ordenados_datos/tablas_ejemplo.xls", sheet = "tabla2")
+tabla_3 <- read_excel("C:/Users/david/OneDrive/Escritorio/Personal/a2/Curso - R/6. Datos_ordenados/Datos_ordenados_datos/tablas_ejemplo.xls", sheet = "tabla3")
+
+tabla_1
+tabla_2
+tabla_3
+```
+
+La tabla 3 es la única que está correcta. No hay que agregar columnas adicionales (lo que si pasa en la tabla 2 para los pacientes, o en la tabla 1 para los tratamientos).
+
+Así, ya tenemos la "tidy data" (o datos limpios), que es la tabla ya limpia, y la cual se puede trabajar.
+
+### GATHERING
+
+Hay dos razones por las cuales una tabla puede estar desorganizada:
+
+1)  Una variable en muchas columnas
+2)  Una observación en muchas filas
+
+En el primer caso se usa "gather"
+
+```{r}
+datos <- read_csv("C:/Users/david/OneDrive/Escritorio/Personal/a2/Curso - R/6. Datos_ordenados/Datos_ordenados_datos/datos_banco_mundial.csv")
+
+head(datos)
+```
+
+Nos trae varias columnas, en las cuales están los años por separado. Dice que son 65 variables pero son los años repetidos. Podemos armar una columna que se llame "años"
+
+```{r}
+library(dplyr)
+
+datos2 <- datos%>%
+  gather('1960' : '2020', key = "Año", value = "valor")
+
+datos2
+```
+
+Se utiliza una UNICA comilla ('), ":" me indica un rango de valores entre los cuales trabajar. Da dos variables. "key" genera una primera columna con los títulos de las columnas a resumir, y se especifica el valor. "value" especifica el nombre lo que había en cada celda debajo de cada año.
+
+Ya tenemos una tabla con solo 6 columnas!!!
+
+NOTA: En R no importa la cantidad de filas, pero si es ideal disminuir la cantidad de columnas.
+
+### SPREADING
+
+Los datos anteriores aún no son "tidy data", porque las variables de la columna "Serie name" son repetitivas, se podrían tener en columnas independientes, para hacer un registro más fácil.
+
+Para eso se usa la función "spread".
+
+```{r}
+datos3 <- datos2%>%
+  select(-('serie Code'))%>% #Porque esta columna queda inutil en esta organización, e impediria el nuevo arreglo
+  spread(key="serie Name", value = "valor")
+
+datos3
+```
+
+Está distribuyendo la columna de "valor" entre las nuevas columnas que son las de "serie Name".
+
+Ahora si, practicamente tenemos una "tidy data", pero hay que cambiar el tipo de variable.
+
+### LIMPIAR Y CONVERTIR DATOS
+
+Ahora tenemos que reemplzara los valores perdidos por "NA" y determinar el tipo de variable.
+
+```{r}
+datos <- datos3%>%
+  mutate(`Cajeros automaticos (por cada 100.000 adultos)` = ifelse(`Cajeros automaticos (por cada 100.000 adultos)`=="..", NA, `Cajeros automaticos (por cada 100.000 adultos)`))%>%
+  mutate(`PIB (US$ a precios constantes de 2010)`= ifelse(`PIB (US$ a precios constantes de 2010)`== "..", NA, `PIB (US$ a precios constantes de 2010)`))%>%
+  mutate(`Poblacion, total` = ifelse(`Poblacion, total`=="..", NA, `Poblacion, total`))
+
+datos3
+```
+
+Usando "mutate" puedo hacer uchos cambios en una misma tabla con una sola línea de código
+
+```{r}
+summary(datos)
+```
+
+El año, Cajeros, PIB y población total no deberían ser caracteres. Se puede cambiar con parse, pero hay otra forma
+
+```{r}
+datos2 <- datos%>%
+  mutate(Año = as.numeric(Año))%>%
+  mutate(`Cajeros automaticos (por cada 100.000 adultos)`=as.numeric(`Cajeros automaticos (por cada 100.000 adultos)`))%>%
+  mutate(`PIB (US$ a precios constantes de 2010)`=as.numeric(`PIB (US$ a precios constantes de 2010)`))%>%
+  mutate(`Poblacion, total`=as.numeric(`Poblacion, total`))
+
+datos2
+```
+
+```{r}
+summary(datos2)
+```
+
+Como ya es numérico me da el resumen estadístico.
+
+NOTA: R no tolera espacios en los nombres de las tablas, por eso se usa la comilla sencilla (`) para poner el nombre.
+
+Vamos a intentar hacer una gráfica del crecimiento del PIB por país
+
+```{r}
+ggplot(data = datos2, aes(Año, `PIB (US$ a precios constantes de 2010)`))+
+  geom_line(aes(group=Pais), na.rm = T)+
+  geom_point(aes(color = Pais), na.rm = T)
+```
+
+MI INTENTO...
+
+```{r}
+datos3 <- datos2%>%
+  group_by(Pais, Año)
+
+ggplot(data = datos3)+
+  geom_line(mapping = aes(x = Año, y = `PIB (US$ a precios constantes de 2010)`, linetype = Pais), na.rm=T)+
+  geom_point(mapping = aes(x=Año, y = `PIB (US$ a precios constantes de 2010)`, color = Pais),na.rm = T)
+```
+
+Se puede agrupar directamente desde el ggplot, y no hay que crear una nueva tabla con los agrupamientos!!!
+
+### UNIR Y SEPARAR
+
+Como separar o unir datos dentro de columnas
+
+```{r}
+datos <- read_csv("C:/Users/david/OneDrive/Escritorio/Personal/a2/Curso - R/6. Datos_ordenados/Datos_ordenados_datos/Investigadores-SNI-Vigentes-2018.csv")
+
+datos
+```
+
+Quiero unir los nombres para tener el nombre completo, y quiero separar en dos columnas la columna de área del conocimiento.
+
+Para unir, se utiliza la función "unite"
+
+```{r}
+datos <- datos%>%
+  unite(Nombre, `Apellido Paterno`, `Apellido Materno`, Nombre, sep = " ")
+
+datos  
+```
+
+No quedan las columnas que se unieron, ellas se eliminan. " " me separa los nombres con un espacio, si no, quedarían pegados
+
+```{r}
+datos <- datos%>%
+  separate(`Area del Conocimiento`, into = c("cve_area", "area"), sep = ":")
+
+datos
+```
+
