@@ -66,6 +66,7 @@ ggplot(data = enoe)+
   geom_point(aes(anios_esc, ingreso_mensual), color = "orange")+
   geom_smooth(aes(anios_esc, ingreso_mensual), color = "orange")
 ```
+
 "smooth" es una línea suavizada
 
 ```{r}
