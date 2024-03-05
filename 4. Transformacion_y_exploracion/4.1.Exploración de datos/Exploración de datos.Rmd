@@ -1,7 +1,12 @@
 ---
-title: "R Notebook"
-output: html_notebook
+output: rmarkdown::github_document
+
+title: Exploración de datos
 ---
+
+```{r message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8)
+```
 
 ```{r}
 library(tidyverse)
@@ -10,7 +15,7 @@ options(scipen = 999)
 ```
 
 ```{r}
-enigh <- read_csv("hogares_enigh.csv")
+enigh <- read_csv("C:/Users/david/OneDrive/Escritorio/Personal/a2/Curso - R/4. Transformacion_y_exploracion/4.1.Exploración de datos/hogares_enigh.csv")
 ```
 
 ### DISTRIBUCION DE DATOS
@@ -19,7 +24,7 @@ enigh <- read_csv("hogares_enigh.csv")
 ggplot(data = enigh)+
   geom_bar(mapping = aes(x=tot_integ))
 ```
-Se observar que hay hogares con muchos integrantes per es algo atípico
+Se observar que hay hogares con muchos integrantes pero es algo atípico
 
 ```{r}
 enigh%>%
@@ -85,7 +90,7 @@ ggplot(ingresos, mapping=aes(x=ing_cor, color = clase_hog))+
   
 ```
 
-Se ve que el histograma no funciona porque cubre algunas clases, para eso está ña geometría "freqpoy". Este no tiene fondo
+Se ve que el histograma no funciona porque cubre algunas clases, para eso está la geometría "freqpoy". Este no tiene fondo
 
 ```{r}
 ggplot(data = ingresos, mapping = aes(x=ing_cor, color = clase_hog))+
@@ -168,7 +173,7 @@ Es el comportamiento entre variables. Depende de los tipos de variables que se t
 summary(enigh$sexo_jefe)
 ```
 
-Es una variabl categórica pero por ser números es continua
+Es una variable categórica pero por ser números es continua
 
 ```{r}
 enigh$sexo_jefe <- gsub(1, "Hombre", enigh$sexo_jefe)
@@ -187,7 +192,7 @@ ggplot(data = na.omit(enigh), mapping = aes(x = ing_cor, color =clase_hog))+
 ```
 "na.omit" hace que no se tomen los NA's en el gráfico
 
-No nos casamos on esta porque hay mucha diferencia entre los hogares nucleares y el resto de los hogares.
+No nos casamos con esta porque hay mucha diferencia entre los hogares nucleares y el resto de los hogares.
 
 Se puede hacer una gráfica de barras por proporción
 
